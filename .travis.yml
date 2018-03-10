@@ -1,0 +1,11 @@
+language: csharp
+solution: "./FlyAtlanticFlightMonitorApi.sln"
+script:
+- xbuild /p:Configuration=Travis ./Acars.sln
+after_success:
+- cd DataRecorder/bin/Travis && zip -r ../../../travis-build.zip . && cd ../../..
+deploy:
+  provider: releases
+  api_key: "$GH_TOKEN"
+  file: "travis-build.zip"
+  skip_cleanup: true
