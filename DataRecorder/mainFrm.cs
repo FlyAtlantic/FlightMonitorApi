@@ -14,12 +14,18 @@ namespace DataRecorder
             InitializeComponent();
 
             flightMonitor = new FlightMonitor();
+            flightMonitor.Interests.Add(testInterest);
             flightMonitor.StartWorkers();
 
             guiUpdate = new Timer();
             guiUpdate.Interval = 1000;
             guiUpdate.Tick += GuiUpdate_Tick;
             guiUpdate.Start();
+        }
+
+        public bool testInterest(FSUIPCSnapshot queued, FSUIPCSnapshot contender)
+        {
+            return (Math.Abs(contender.Altitude - queued.Altitude) > 150);
         }
 
         private void GuiUpdate_Tick(object sender, EventArgs e)

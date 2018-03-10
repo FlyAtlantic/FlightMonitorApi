@@ -1,13 +1,18 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace FlyAtlanticFlightMonitorApi
 {
-    public delegate bool SnapshotInterest(FSUIPCSnapshot a, FSUIPCSnapshot b);
+    public delegate bool SnapshotInterest(FSUIPCSnapshot queued, FSUIPCSnapshot contenter);
 
     public class FlightMonitor
     {
         public BlockingCollection<FSUIPCSnapshot> Queue;
+
+        private FSUIPCSnapshot lastQueued;
+
+        public List<SnapshotInterest> Interests;
 
         Thread monitoringThread;
 
@@ -17,6 +22,8 @@ namespace FlyAtlanticFlightMonitorApi
         {
             monitoringThread = new Thread(new ThreadStart(MonitoringWorker));
             Queue = new BlockingCollection<FSUIPCSnapshot>();
+            Interests = new List<SnapshotInterest>();
+            lastQueued = null;
         }
 
         public void StartWorkers()
@@ -32,7 +39,13 @@ namespace FlyAtlanticFlightMonitorApi
         {
             while (running)
             {
-                Queue.Add(FSUIPCSnapshot.Pool());
+                FSUIPCSnapshot contender = FSUIPCSnapshot.Pool();
+
+                foreach(SnapshotInterest s in Interests)
+                    if (lastQueued == null || s(lastQueued, contender))
+                        Queue.Add(lastQueued = contender);
+
+                Thread.Sleep(1);
             }
         }
     }
