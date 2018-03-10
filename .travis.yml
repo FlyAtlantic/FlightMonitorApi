@@ -1,7 +1,7 @@
 language: csharp
 solution: "./FlyAtlanticFlightMonitorApi.sln"
 script:
-- xbuild /p:Configuration=Travis ./Acars.sln
+- xbuild /p:Configuration=Travis ./FlyAtlanticFlightMonitorApi.sln
 after_success:
 - cd DataRecorder/bin/Travis && zip -r ../../../travis-build.zip . && cd ../../..
 deploy:
